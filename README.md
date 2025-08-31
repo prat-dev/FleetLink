@@ -1,5 +1,4 @@
 
-
 #Vehicle Booking Application
 This is a Next.js full-stack application that manages a vehicle booking system with:
 
