@@ -1,7 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import {useFormState, useFormStatus} from 'react-dom';
+import {useActionState} from 'react';
+import {useFormStatus} from 'react-dom';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useForm} from 'react-hook-form';
 import {z} from 'zod';
@@ -40,7 +41,7 @@ function SubmitButton() {
 }
 
 export function VehicleSearchForm({onSearch}: SearchFormProps) {
-  const [state, formAction] = useFormState(getRideEstimateAndVehicles, {
+  const [state, formAction] = useActionState(getRideEstimateAndVehicles, {
     results: [],
   });
 
