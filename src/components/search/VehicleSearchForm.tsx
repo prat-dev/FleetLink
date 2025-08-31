@@ -69,17 +69,6 @@ export function VehicleSearchForm({onSearch}: SearchFormProps) {
           <form
             action={formAction}
             className="space-y-6"
-            // Use form.handleSubmit to trigger client-side validation before submitting
-            onSubmit={form.handleSubmit(() => {
-              // Create a FormData object from the valid form data
-              const formData = new FormData();
-              const data = form.getValues();
-              Object.entries(data).forEach(([key, value]) => {
-                formData.append(key, String(value));
-              });
-              // Manually call the server action
-              formAction(formData);
-            })}
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
