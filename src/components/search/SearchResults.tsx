@@ -5,10 +5,14 @@ import {Card, CardContent, CardFooter, CardHeader, CardTitle} from '@/components
 import {Badge} from '@/components/ui/badge';
 import type {SearchResult} from '@/lib/types';
 import {Users, Star, Info, Bot, Clock} from 'lucide-react';
+import {createBooking} from '@/lib/actions';
+import {useToast} from '@/hooks/use-toast';
+import {useRouter} from 'next/navigation';
+import * as React from 'react';
 
 type SearchResultsProps = {
   state: {
-    results?: (Partial<SearchResult> & {estimation: SearchResult['estimation']})[];
+    results?: (Partial<SearchResult> & {estimation: SearchResult['estimation']; startTime?: string})[];
     error?: string;
     message?: string;
   };
@@ -16,6 +20,29 @@ type SearchResultsProps = {
 
 export function SearchResults({state}: SearchResultsProps) {
   const {results, error, message} = state;
+  const {toast} = useToast();
+  const router = useRouter();
+  const [isBooking, setIsBooking] = React.useState<number | null>(null);
+
+  const handleBookNow = async (vehicleId: number, startTime: string) => {
+    setIsBooking(vehicleId);
+    try {
+      await createBooking(vehicleId, startTime);
+      toast({
+        title: 'Booking Successful!',
+        description: 'Your ride has been booked.',
+      });
+      router.push('/booking/confirmed');
+    } catch (e) {
+      toast({
+        variant: 'destructive',
+        title: 'Booking Failed',
+        description: 'Could not book the ride. Please try again.',
+      });
+    } finally {
+      setIsBooking(null);
+    }
+  };
 
   if (error) {
     return null; // Error is handled by toast in the parent component
@@ -116,8 +143,12 @@ export function SearchResults({state}: SearchResultsProps) {
               </div>
             </CardContent>
             <CardFooter>
-              <Button asChild className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold">
-                <Link href="/booking/confirmed">Book Now</Link>
+              <Button
+                onClick={() => handleBookNow(vehicle.id, vehicle.startTime!)}
+                disabled={isBooking === vehicle.id}
+                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold"
+              >
+                {isBooking === vehicle.id ? 'Booking...' : 'Book Now'}
               </Button>
             </CardFooter>
           </Card>

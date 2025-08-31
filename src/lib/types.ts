@@ -13,4 +13,14 @@ export interface Vehicle {
 
 export interface SearchResult extends Vehicle {
   estimation: RouteDurationEstimationOutput;
+  startTime?: string;
+}
+
+export interface Booking {
+  id: string;
+  vehicle: Vehicle;
+  startTime: string;
+  origin: string;
+  destination: string;
+  bookingTime: string;
 }

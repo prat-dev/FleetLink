@@ -1,8 +1,10 @@
 'use server';
 
 import {z} from 'zod';
+import {revalidatePath} from 'next/cache';
 import {estimateRideDuration} from '@/ai/flows/route-duration-estimation';
-import type {SearchResult, Vehicle} from '@/lib/types';
+import type {SearchResult, Vehicle, Booking} from '@/lib/types';
+import {faker} from '@faker-js/faker';
 
 const searchSchema = z.object({
   origin: z.string().min(3, 'Origin pincode is required.'),
@@ -11,8 +13,8 @@ const searchSchema = z.object({
   startTime: z.string().min(1, 'Start time is required.'),
 });
 
-// Mock database of vehicles
-const allVehicles: Vehicle[] = [
+// Mock database of vehicles and bookings
+let allVehicles: Vehicle[] = [
   {
     id: 1,
     type: 'Sedan',
@@ -50,6 +52,45 @@ const allVehicles: Vehicle[] = [
   },
 ];
 
+let bookings: Booking[] = [];
+
+// Simulate creating a booking
+export async function createBooking(vehicleId: number, startTime: string): Promise<Booking> {
+  const vehicle = allVehicles.find(v => v.id === vehicleId);
+  if (!vehicle) {
+    throw new Error('Vehicle not found');
+  }
+
+  const newBooking: Booking = {
+    id: faker.string.uuid(),
+    vehicle,
+    startTime,
+    origin: faker.location.zipCode(),
+    destination: faker.location.zipCode(),
+    bookingTime: new Date().toISOString(),
+  };
+
+  bookings.push(newBooking);
+  revalidatePath('/bookings');
+  return newBooking;
+}
+
+// Simulate fetching all bookings
+export async function getBookings(): Promise<Booking[]> {
+  return bookings;
+}
+
+// Simulate deleting a booking
+export async function deleteBooking(bookingId: string) {
+  const initialLength = bookings.length;
+  bookings = bookings.filter(b => b.id !== bookingId);
+  if (bookings.length === initialLength) {
+    throw new Error('Booking not found');
+  }
+  revalidatePath('/bookings');
+  return {success: true};
+}
+
 export async function getRideEstimateAndVehicles(prevState: any, formData: FormData) {
   const validatedFields = searchSchema.safeParse(Object.fromEntries(formData.entries()));
 
@@ -76,6 +117,7 @@ export async function getRideEstimateAndVehicles(prevState: any, formData: FormD
     const results: SearchResult[] = availableVehicles.map(vehicle => ({
       ...vehicle,
       estimation,
+      startTime,
     }));
 
     if (results.length === 0) {

@@ -1,5 +1,6 @@
-import {Truck} from 'lucide-react';
+import {Truck, CalendarDays} from 'lucide-react';
 import Link from 'next/link';
+import {Button} from '@/components/ui/button';
 
 export function Header() {
   return (
@@ -9,6 +10,14 @@ export function Header() {
           <Truck className="h-6 w-6 text-primary" />
           <span className="text-xl font-bold text-foreground">FleetLink</span>
         </Link>
+        <nav>
+          <Button variant="ghost" asChild>
+            <Link href="/bookings">
+              <CalendarDays className="mr-2 h-4 w-4" />
+              My Bookings
+            </Link>
+          </Button>
+        </nav>
       </div>
     </header>
   );
